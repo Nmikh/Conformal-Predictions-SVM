@@ -23,7 +23,7 @@ public class SymptomsService {
         this.simptomsDAO = new SimptomsDAO();
     }
 
-    public ArrayList<Prediction> getConformalPrediction(String fileName) throws IOException, SQLException {
+    public ArrayList<Prediction> getConformalPrediction(String fileName, int degree) throws IOException, SQLException {
         //read data from file
         //read the data from file and put it in the train module
         FileReader input = new FileReader(fileName);
@@ -53,7 +53,7 @@ public class SymptomsService {
         }
 
         ArrayList<Prediction> predictions = new ArrayList<Prediction>();
-        svm_model svmModelPrediction = this.svmTrainConformalPredict(dataSet);
+        svm_model svmModelPrediction = this.svmTrainConformalPredict(dataSet, degree);
         List<LibSVMConfidence> svmPredictions = this.evaluateAllInstances(svmModelPrediction, testDataSet);
 
         for (int i = 0; i < testDataSet.size(); i++) {
@@ -63,12 +63,12 @@ public class SymptomsService {
             ////////////////////////////////////
             //           pPositive           //
             //////////////////////////////////
-            pPositive = pPositiveCalc(dataSet, testDataSet, i, prediction);
+            pPositive = pPositiveCalc(dataSet, testDataSet, i, prediction, degree);
 
             ////////////////////////////////////
             //           pNegative           //
             //////////////////////////////////
-            pNegative = pNegativeCalc(dataSet, testDataSet, i, prediction);
+            pNegative = pNegativeCalc(dataSet, testDataSet, i, prediction, degree);
 
 
             //set prediction
@@ -77,10 +77,10 @@ public class SymptomsService {
         return predictions;
     }
 
-    public double pPositiveCalc(ArrayList<DataObject> dataSet, ArrayList<DataObject> testDataSet, int i, Prediction prediction) throws SQLException {
+    public double pPositiveCalc(ArrayList<DataObject> dataSet, ArrayList<DataObject> testDataSet, int i, Prediction prediction, int degree) throws SQLException {
         testDataSet.get(i).setCategory(1);
         dataSet.add(testDataSet.get(i));
-        svm_model svmModelPositive = this.svmTrainConformalPredict(dataSet);
+        svm_model svmModelPositive = this.svmTrainConformalPredict(dataSet, degree);
         int positiveAlphaIndex = -1; // index of the checking object in model
         this.alphaPositive = 0; // alpha of the checking object
         int countAlphasPositive = 0; // positive alphas in train dataSet
@@ -139,10 +139,10 @@ public class SymptomsService {
         return pPositive;
     }
 
-    public double pNegativeCalc(ArrayList<DataObject> dataSet, ArrayList<DataObject> testDataSet, int i, Prediction prediction) throws SQLException {
+    public double pNegativeCalc(ArrayList<DataObject> dataSet, ArrayList<DataObject> testDataSet, int i, Prediction prediction, int degree) throws SQLException {
         testDataSet.get(i).setCategory(-1);
         dataSet.add(testDataSet.get(i));
-        svm_model svmModelNegative = this.svmTrainConformalPredict(dataSet);
+        svm_model svmModelNegative = this.svmTrainConformalPredict(dataSet, degree);
 
         int negativeAlphaIndex = -1; // index of the checking object in model
         this.alphaNegative = 0; // alpha of the checking object
@@ -239,7 +239,7 @@ public class SymptomsService {
         return prediction;
     }
 
-    public svm_model svmTrainConformalPredict(ArrayList<DataObject> dataset) throws SQLException {
+    public svm_model svmTrainConformalPredict(ArrayList<DataObject> dataset, int degree) throws SQLException {
         int recordSize = dataset.size();
 
         double nodeValues[][] = new double[recordSize][]; //jagged array used to store values
@@ -322,8 +322,9 @@ public class SymptomsService {
         param.svm_type = svm_parameter.C_SVC;
         param.kernel_type = svm_parameter.POLY;
         param.cache_size = 20000;
-        param.eps = 0.001;
-        param.degree = 2;
+        param.eps = 0.2;
+       // param.eps = 0.001;
+        param.degree = degree;
 
         svm_model model = svm.svm_train(prob, param);
 

@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class Parser {
     public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException {
@@ -31,5 +32,20 @@ public class Parser {
             );
             simptomsDAO.addObject(o);
         }
+    }
+
+    public static ArrayList<String> getTitle(String fileName) throws IOException {
+        ArrayList<String> titleString = new ArrayList<String>();
+        FileReader input = new FileReader(fileName + ".txt");
+        BufferedReader bufRead = new BufferedReader(input);
+        String line = null;
+
+        while ((line = bufRead.readLine()) != null) {
+            String[] array = line.split(",");
+            for (int i = 0; i < array.length; i++) {
+                titleString.add(array[i]);
+            }
+        }
+        return titleString;
     }
 }
