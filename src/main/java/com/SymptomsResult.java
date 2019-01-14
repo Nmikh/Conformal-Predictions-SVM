@@ -8,6 +8,11 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.models.Prediction;
+import com.services.SymptomsService;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import parser.Parser;
@@ -16,6 +21,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -31,7 +37,7 @@ public class SymptomsResult {
         int amountOfTruePrediction = 0;
         int amountSVMandPrediction = 0;
 
-        String fileName = outputFileName+".txt";
+        String fileName = outputFileName + ".txt";
         NumberFormat formatterCC = new DecimalFormat("#0.00");
         NumberFormat formatterID = new DecimalFormat("#000");
 
@@ -138,7 +144,7 @@ public class SymptomsResult {
         System.out.println("amountSVMandPrediction: " + amountSVMandPrediction);
     }
 
-    public void printAlphasResultInTwoTxt(ArrayList<Prediction> conformalPrediction, String outputFileNameMain, String outputFileNameAlphasPos, String  outputFileNameAlphasNeg) throws IOException {
+    public void printAlphasResultInTwoTxt(ArrayList<Prediction> conformalPrediction, String outputFileNameMain, String outputFileNameAlphasPos, String outputFileNameAlphasNeg) throws IOException {
         int percent = 0;
         int amountOfTruePrediction = 0;
         int amountSVMandPrediction = 0;
@@ -152,8 +158,6 @@ public class SymptomsResult {
         File resultMain = new File(fileNameMain);
         resultMain.delete();
         resultMain = new File(fileNameMain);
-
-
 
 
         FileWriter writerMain = new FileWriter(resultMain, true);
@@ -250,7 +254,7 @@ public class SymptomsResult {
                 writerAlphasPos.write("" + formatterCC.format(conformalPrediction.get(i).getPositiveSupportVectorsAlphas().get(cp)) + ", ");
             }
 
-            writerAlphasPos.write(" | " );
+            writerAlphasPos.write(" | ");
             writerAlphasPos.write("\r\n");
         }
         writerAlphasPos.flush();
@@ -269,12 +273,11 @@ public class SymptomsResult {
             for (int cn = 0; cn < conformalPrediction.get(i).getNegativeSupportVectorsAlphas().size(); cn++) {
                 writerAlphasNeg.write("" + formatterCC.format(conformalPrediction.get(i).getNegativeSupportVectorsAlphas().get(cn)) + ", ");
             }
-            writerAlphasNeg.write(" | " );
+            writerAlphasNeg.write(" | ");
             writerAlphasNeg.write("\r\n");
         }
         writerAlphasNeg.flush();
         writerAlphasNeg.write("|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|\r\n");
-
 
 
         System.out.println("Percent of true: " + (double) percent / (double) conformalPrediction.size());
@@ -443,7 +446,6 @@ public class SymptomsResult {
             cellCredibility.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
 
-
             cellAlphaPositive = new PdfPCell(new Paragraph(formatterCC.format(conformalPrediction.get(i).getAlphaPositive())));
             cellAlphaPositive.setPaddingLeft(10);
             cellAlphaPositive.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -559,7 +561,7 @@ public class SymptomsResult {
 //        System.out.println("amountSVMandPrediction: " + amountSVMandPrediction);
     }
 
-    public void printFullResultInOneExcel(ArrayList<Prediction> conformalPrediction, String outputFileName, String sheetName) throws IOException{
+    public void printFullResultInOneExcel(ArrayList<Prediction> conformalPrediction, String outputFileName, String sheetName) throws IOException {
 
         SettingsExcel settingsExcel = new SettingsExcel();
         XSSFWorkbook workbook = new XSSFWorkbook();
@@ -570,13 +572,727 @@ public class SymptomsResult {
         stringsName = Parser.getTitle("titleName");
 
         settingsExcel.createCellForTitle(sheet, stringsName);
+
         settingsExcel.createCellDouble(sheet, conformalPrediction);
+
+        settingsExcel.createCellRange80To100(sheet, conformalPrediction);
+
+        settingsExcel.createCellMatrixRegionPrediction(sheet, getMatrixRegionPrediction(conformalPrediction), conformalPrediction.size() + 10);
+
         //settingsExcel.createCellTestColor(sheet, conformalPrediction);
 
-        File file = new File("C:/SVM2/" + outputFileName +"/" +outputFileName + ".xlsx");
+        File file = new File("C:/SVM2/" + outputFileName + "/" + outputFileName + ".xlsx");
         file.getParentFile().mkdirs();
         FileOutputStream outFile = new FileOutputStream(file);
         workbook.write(outFile);
         System.out.println("Created file: " + file.getAbsolutePath());
+
+//        System.out.println("Region Prediction:\n");
+//        printMatrixRegionPrediction(conformalPrediction);
     }
+
+    public void printRegionPrediction_old(ArrayList<Prediction> conformalPrediction) {
+        int row = 5;
+        int column = 5;
+        int[][] matrix = new int[row][column];
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < column; j++) {
+                matrix[i][j] = 0;
+            }
+        }
+
+
+        int i;
+        int j = 0;
+        double significance;
+
+        for (int k = 0; k < conformalPrediction.size(); k++) {
+
+            significance = 0.01;
+            i = 0;
+
+            if (conformalPrediction.get(k).getRealClass() == 1 && conformalPrediction.get(k).getPredictClass() == 1) {
+                j = 0;
+            }
+            if (conformalPrediction.get(k).getRealClass() == -1 && conformalPrediction.get(k).getPredictClass() == 1) {
+                j = 1;
+            }
+            if (conformalPrediction.get(k).getRealClass() == 1 && conformalPrediction.get(k).getPredictClass() == -1) {
+                j = 2;
+            }
+            if (conformalPrediction.get(k).getRealClass() == -1 && conformalPrediction.get(k).getPredictClass() == -1) {
+                j = 3;
+            }
+
+            if (conformalPrediction.get(k).getpPositive() >= significance) {
+                matrix[i][j] = matrix[i][j] + 1;
+            }
+            if (conformalPrediction.get(k).getpNegative() >= significance) {
+                matrix[i][j] = matrix[i][j] + 1;
+            }
+            if (conformalPrediction.get(k).getpPositive() < 0 && conformalPrediction.get(k).getpNegative() < 0) {
+                matrix[i][4] = matrix[i][4] + 1;
+            }
+            significance = 0.05;
+            for (i = 1; i < row; i++) {
+                if (conformalPrediction.get(k).getpPositive() >= significance) {
+                    matrix[i][j] = matrix[i][j] + 1;
+                }
+                if (conformalPrediction.get(k).getpNegative() >= significance) {
+                    matrix[i][j] = matrix[i][j] + 1;
+                }
+                if (conformalPrediction.get(k).getpPositive() < significance && conformalPrediction.get(k).getpNegative() < significance) {
+                    matrix[i][4] = matrix[i][4] + 1;
+                }
+                significance = significance + 0.05;
+            }
+        }
+
+        System.out.println();
+        System.out.println("Total object: " + conformalPrediction.size());
+        System.out.println("Region Prediction:\n");
+        for (i = 0; i < row; i++) {
+            for (j = 0; j < column; j++) {
+                System.out.print(matrix[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+
+    public void printMatrixRegionPrediction(ArrayList<Prediction> conformalPrediction) {
+        int row = 5;
+        int column = 5;
+        //int[][] matrix = new int[row][column];
+//        for (int i = 0; i < row; i++) {
+//            for (int j = 0; j < column; j++) {
+//                matrix[i][j] = 0;
+//            }
+//        }
+        int[][] matrix = getMatrixRegionPrediction(conformalPrediction);
+
+
+//        int i;
+//        int j = 0;
+//        double significance;
+//
+//        for (int k = 0; k < conformalPrediction.size(); k++) {
+//
+//            significance = 0.01;
+//            i = 0;
+//
+//            if (conformalPrediction.get(k).getRealClass() == 1 && conformalPrediction.get(k).getPredictClass() == 1) {
+//                j = 0;
+//                if (conformalPrediction.get(k).getpPositive() >= significance) {
+//                    matrix[i][j] = matrix[i][j] + 1;
+//                } else if (conformalPrediction.get(k).getpPositive() < significance) {
+//                    matrix[i][4] = matrix[i][4] + 1;
+//                }
+//            }
+//            if (conformalPrediction.get(k).getRealClass() == -1 && conformalPrediction.get(k).getPredictClass() == 1) {
+//                j = 1;
+//                if (conformalPrediction.get(k).getpPositive() >= significance) {
+//                    matrix[i][j] = matrix[i][j] + 1;
+//                } else if (conformalPrediction.get(k).getpPositive() < significance) {
+//                    matrix[i][4] = matrix[i][4] + 1;
+//                }
+//            }
+//            if (conformalPrediction.get(k).getRealClass() == 1 && conformalPrediction.get(k).getPredictClass() == -1) {
+//                j = 2;
+//                if (conformalPrediction.get(k).getpNegative() >= significance) {
+//                    matrix[i][j] = matrix[i][j] + 1;
+//                } else if (conformalPrediction.get(k).getpNegative() < significance) {
+//                    matrix[i][4] = matrix[i][4] + 1;
+//                }
+//            }
+//            if (conformalPrediction.get(k).getRealClass() == -1 && conformalPrediction.get(k).getPredictClass() == -1) {
+//                j = 3;
+//                if (conformalPrediction.get(k).getpNegative() >= significance) {
+//                    matrix[i][j] = matrix[i][j] + 1;
+//                } else if (conformalPrediction.get(k).getpNegative() < significance) {
+//                    matrix[i][4] = matrix[i][4] + 1;
+//                }
+//            }
+//
+//            significance = 0.05;
+//            for (i = 1; i < row; i++) {
+//                switch (j){
+//                    case 0:
+//                        if (conformalPrediction.get(k).getpPositive() >= significance) {
+//                            matrix[i][j] = matrix[i][j] + 1;
+//                        } else if (conformalPrediction.get(k).getpPositive() < significance) {
+//                            matrix[i][4] = matrix[i][4] + 1;
+//                        }
+//                        break;
+//
+//                    case 1:
+//                        if (conformalPrediction.get(k).getpPositive() >= significance) {
+//                            matrix[i][j] = matrix[i][j] + 1;
+//                        } else if (conformalPrediction.get(k).getpPositive() < significance) {
+//                            matrix[i][4] = matrix[i][4] + 1;
+//                        }
+//                        break;
+//
+//                    case 2:
+//                        if (conformalPrediction.get(k).getpNegative() >= significance) {
+//                            matrix[i][j] = matrix[i][j] + 1;
+//                        } else if (conformalPrediction.get(k).getpNegative() < significance) {
+//                            matrix[i][4] = matrix[i][4] + 1;
+//                        }
+//                        break;
+//
+//                    case 3:
+//                        if (conformalPrediction.get(k).getpNegative() >= significance) {
+//                            matrix[i][j] = matrix[i][j] + 1;
+//                        } else if (conformalPrediction.get(k).getpNegative() < significance) {
+//                            matrix[i][4] = matrix[i][4] + 1;
+//                        }
+//                        break;
+//                }
+//                significance = significance + 0.05;
+//            }
+//        }
+
+        System.out.println();
+        System.out.println("Total object: " + conformalPrediction.size());
+        System.out.println("Region Prediction:");
+        System.out.println("Real:    1 -1  1 -1 Empty");
+        System.out.println("Predict: 1  1 -1 -1 Empty");
+        for (int i = 0; i < row; i++) {
+            switch (i) {
+                case 0:
+                    System.out.print("0.01     ");
+                    break;
+                case 1:
+                    System.out.print("0.05     ");
+                    break;
+                case 2:
+                    System.out.print("0.1      ");
+                    break;
+                case 3:
+                    System.out.print("0.15     ");
+                    break;
+                case 4:
+                    System.out.print("0.2      ");
+                    break;
+            }
+            for (int j = 0; j < column; j++) {
+                System.out.print(matrix[i][j] + " ");
+
+            }
+            System.out.println();
+        }
+    }
+
+    public int[][] getMatrixRegionPrediction(ArrayList<Prediction> conformalPrediction) {
+        int row = 5;
+        int column = 5;
+        int[][] matrix = new int[row][column];
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < column; j++) {
+                matrix[i][j] = 0;
+            }
+        }
+
+        int i;
+        int j = 0;
+        double significance;
+
+        for (int k = 0; k < conformalPrediction.size(); k++) {
+
+            significance = 0.01;
+            i = 0;
+
+            if (conformalPrediction.get(k).getRealClass() == 1 && conformalPrediction.get(k).getPredictClass() == 1) {
+                j = 0;
+                if (conformalPrediction.get(k).getpPositive() >= significance) {
+                    matrix[i][j] = matrix[i][j] + 1;
+                } else if (conformalPrediction.get(k).getpPositive() < significance) {
+                    matrix[i][4] = matrix[i][4] + 1;
+                }
+            }
+            if (conformalPrediction.get(k).getRealClass() == -1 && conformalPrediction.get(k).getPredictClass() == 1) {
+                j = 1;
+                if (conformalPrediction.get(k).getpPositive() >= significance) {
+                    matrix[i][j] = matrix[i][j] + 1;
+                } else if (conformalPrediction.get(k).getpPositive() < significance) {
+                    matrix[i][4] = matrix[i][4] + 1;
+                }
+            }
+            if (conformalPrediction.get(k).getRealClass() == 1 && conformalPrediction.get(k).getPredictClass() == -1) {
+                j = 2;
+                if (conformalPrediction.get(k).getpNegative() >= significance) {
+                    matrix[i][j] = matrix[i][j] + 1;
+                } else if (conformalPrediction.get(k).getpNegative() < significance) {
+                    matrix[i][4] = matrix[i][4] + 1;
+                }
+            }
+            if (conformalPrediction.get(k).getRealClass() == -1 && conformalPrediction.get(k).getPredictClass() == -1) {
+                j = 3;
+                if (conformalPrediction.get(k).getpNegative() >= significance) {
+                    matrix[i][j] = matrix[i][j] + 1;
+                } else if (conformalPrediction.get(k).getpNegative() < significance) {
+                    matrix[i][4] = matrix[i][4] + 1;
+                }
+            }
+
+            significance = 0.05;
+            for (i = 1; i < row; i++) {
+                switch (j) {
+                    case 0:
+                        if (conformalPrediction.get(k).getpPositive() >= significance) {
+                            matrix[i][j] = matrix[i][j] + 1;
+                        } else if (conformalPrediction.get(k).getpPositive() < significance) {
+                            matrix[i][4] = matrix[i][4] + 1;
+                        }
+                        break;
+
+                    case 1:
+                        if (conformalPrediction.get(k).getpPositive() >= significance) {
+                            matrix[i][j] = matrix[i][j] + 1;
+                        } else if (conformalPrediction.get(k).getpPositive() < significance) {
+                            matrix[i][4] = matrix[i][4] + 1;
+                        }
+                        break;
+
+                    case 2:
+                        if (conformalPrediction.get(k).getpNegative() >= significance) {
+                            matrix[i][j] = matrix[i][j] + 1;
+                        } else if (conformalPrediction.get(k).getpNegative() < significance) {
+                            matrix[i][4] = matrix[i][4] + 1;
+                        }
+                        break;
+
+                    case 3:
+                        if (conformalPrediction.get(k).getpNegative() >= significance) {
+                            matrix[i][j] = matrix[i][j] + 1;
+                        } else if (conformalPrediction.get(k).getpNegative() < significance) {
+                            matrix[i][4] = matrix[i][4] + 1;
+                        }
+                        break;
+                }
+                significance = significance + 0.05;
+            }
+        }
+        return matrix;
+    }
+
+
+    /////////
+    public void printToExcelTestMethod(String outputFileName, String sheetName) throws IOException {
+
+        SettingsExcel settingsExcel = new SettingsExcel();
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet(sheetName);
+
+
+        ArrayList<String> stringsName;
+        stringsName = Parser.getTitle("titleName");
+
+//        settingsExcel.createCellForTitle(sheet, stringsName);
+//
+//        settingsExcel.createCellDouble(sheet, conformalPrediction);
+//
+//        settingsExcel.createCellRange80To100(sheet, conformalPrediction);
+//
+//        settingsExcel.createCellMatrixRegionPrediction(sheet, getMatrixRegionPrediction(conformalPrediction), conformalPrediction.size() + 10);
+
+
+        //settingsExcel.createCellTestColor(sheet, conformalPrediction);
+
+        File file = new File("C:/SVM2/" + outputFileName + "/" + outputFileName + ".xlsx");
+        file.getParentFile().mkdirs();
+        FileOutputStream outFile = new FileOutputStream(file);
+        workbook.write(outFile);
+        System.out.println("Created file: " + file.getAbsolutePath());
+
+//        System.out.println("Region Prediction:\n");
+//        printMatrixRegionPrediction(conformalPrediction);
+    }
+
+
+    public void printToExcelMatrixRPDifEpsTestMethod(SymptomsService symptomsService, String inputTestFileName, String outputFileName, int degree, String svmType) throws IOException, SQLException {
+
+//        SettingsExcel settingsExcel = new SettingsExcel();
+//
+//
+//        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        File file = new File("C:/SVM6_TEST_RegionPrediction/"  + outputFileName + ".xlsx");
+        file.getParentFile().mkdirs();
+        FileOutputStream outFile = new FileOutputStream(file);
+
+
+
+        SettingsExcel settingsExcel = new SettingsExcel();
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+//        if(file.exists() && file.length() != 0){
+//            try {
+//                workbook = (XSSFWorkbook) WorkbookFactory.create(file);
+//            } catch (InvalidFormatException e) {
+//                e.printStackTrace();
+//            }
+//            sheet = workbook.createSheet(outputFileName);
+//            styleStandart = settingsExcel.createStyleForCellStandart(workbook);
+//        } else {
+//            workbook = new XSSFWorkbook();
+//            sheet = workbook.createSheet(outputFileName);
+//            styleStandart = settingsExcel.createStyleForCellStandart(workbook);
+//        }
+        XSSFSheet sheet = workbook.createSheet(outputFileName);
+        XSSFCellStyle styleStandart = settingsExcel.createStyleForCellStandart(workbook);
+
+        Row row;
+        Cell cell;
+
+        int indentRow = 0;
+
+        row = sheet.createRow(indentRow);
+        cell = row.createCell(0, CellType.STRING);
+        cell.setCellValue("");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(1, CellType.STRING);
+        cell.setCellValue("Real: 1\nPredict: 1");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(2, CellType.STRING);
+        cell.setCellValue("Real: -1\nPredict: 1");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(3, CellType.STRING);
+        cell.setCellValue("Real: 1\nPredict: -1");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(4, CellType.STRING);
+        cell.setCellValue("Real: -1\nPredict: -1");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(5, CellType.STRING);
+        cell.setCellValue("Empty");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(6, CellType.STRING);
+        cell.setCellValue("Uncertain predictions");
+        cell.setCellStyle(styleStandart);
+
+        double[] significance = {0.01, 0.05, 0.1, 0.15, 0.2};
+
+        int column = 6;
+        int[] matrix = new int[column];
+//        for (int j = 0; j < column; j++) {
+//            matrix[j] = 0;
+//        }
+
+
+        ArrayList<Prediction> conformalPrediction = symptomsService.getConformalPrediction(inputTestFileName, degree, 0.001, svmType);
+
+        for (int i = 0; i < significance.length; i++) {
+            for (int j = 0; j < column; j++) {
+                matrix[j] = 0;
+            }
+            for (int k = 0; k < conformalPrediction.size(); k++) {
+                for (int j = 0; j < column; j++) {
+                    switch (j) {
+                        case 0:
+                            if (conformalPrediction.get(k).getRealClass() == 1 && conformalPrediction.get(k).getPredictClass() == 1) {
+                                if (conformalPrediction.get(k).getpPositive() >= significance[i]
+                                        && conformalPrediction.get(k).getpNegative() >= significance[i]){
+                                    matrix[5] = matrix[5]+1;
+                                }
+                                if((conformalPrediction.get(k).getpPositive() < significance[i]
+                                        && conformalPrediction.get(k).getpNegative() < significance[i])){
+                                    matrix[4] = matrix[4]+1;
+                                }
+                                if((conformalPrediction.get(k).getpPositive() >= significance[i]
+                                        && conformalPrediction.get(k).getpNegative() < significance[i])
+                                        || (conformalPrediction.get(k).getpPositive() < significance[i]
+                                        && conformalPrediction.get(k).getpNegative() >= significance[i])){
+                                    matrix[j] = matrix[j]+1;
+                                }
+
+                            }
+                            break;
+
+                        case 1:
+                            if (conformalPrediction.get(k).getRealClass() == -1 && conformalPrediction.get(k).getPredictClass() == 1) {
+                                if (conformalPrediction.get(k).getpPositive() >= significance[i]
+                                        && conformalPrediction.get(k).getpNegative() >= significance[i]){
+                                    matrix[5] = matrix[5]+1;
+                                }
+                                if((conformalPrediction.get(k).getpPositive() < significance[i]
+                                        && conformalPrediction.get(k).getpNegative() < significance[i])){
+                                    matrix[4] = matrix[4]+1;
+                                }
+                                if((conformalPrediction.get(k).getpPositive() >= significance[i]
+                                        && conformalPrediction.get(k).getpNegative() < significance[i])
+                                        || (conformalPrediction.get(k).getpPositive() < significance[i]
+                                        && conformalPrediction.get(k).getpNegative() >= significance[i])){
+                                    matrix[j] = matrix[j]+1;
+                                }
+
+                            }
+//                            if (conformalPrediction.get(k).getRealClass() == -1 && conformalPrediction.get(k).getPredictClass() == 1) {
+////                                if (conformalPrediction.get(k).getpPositive() >= significance[i]) {
+//                                if (conformalPrediction.get(k).getpPositive() <= significance[i]) {
+//                                    matrix[j] = matrix[j] + 1;
+////                                } else if (conformalPrediction.get(k).getpPositive() < significance[i]) {
+//                                } else if (conformalPrediction.get(k).getpPositive() > significance[i]) {
+//                                    matrix[5] = matrix[5] + 1;
+//                                } else if (conformalPrediction.get(k).getpPositive() == conformalPrediction.get(k).getpNegative()) {
+//                                    matrix[4] = matrix[4] + 1;
+//                                }
+
+//                                if(conformalPrediction.get(k).getpNegative() >= significance[i]){
+//                                if(conformalPrediction.get(k).getpNegative() <= significance[i]){
+//                                    matrix[j] = matrix[j] + 1;
+//                                }
+//                            }
+
+
+                            break;
+
+                        case 2:
+                            if (conformalPrediction.get(k).getRealClass() == 1 && conformalPrediction.get(k).getPredictClass() == -1) {
+                                if (conformalPrediction.get(k).getpPositive() >= significance[i]
+                                        && conformalPrediction.get(k).getpNegative() >= significance[i]){
+                                    matrix[5] = matrix[5]+1;
+                                }
+                                if((conformalPrediction.get(k).getpPositive() < significance[i]
+                                        && conformalPrediction.get(k).getpNegative() < significance[i])){
+                                    matrix[4] = matrix[4]+1;
+                                }
+                                if((conformalPrediction.get(k).getpPositive() >= significance[i]
+                                        && conformalPrediction.get(k).getpNegative() < significance[i])
+                                        || (conformalPrediction.get(k).getpPositive() < significance[i]
+                                        && conformalPrediction.get(k).getpNegative() >= significance[i])){
+                                    matrix[j] = matrix[j]+1;
+                                }
+                            }
+//                            if (conformalPrediction.get(k).getRealClass() == 1 && conformalPrediction.get(k).getPredictClass() == -1) {
+////                                if (conformalPrediction.get(k).getpNegative() >= significance[i]) {
+//                                if (conformalPrediction.get(k).getpNegative() <= significance[i]) {
+//                                    matrix[j] = matrix[j] + 1;
+////                                } else if (conformalPrediction.get(k).getpNegative() < significance[i]) {
+//                                } else if (conformalPrediction.get(k).getpNegative() > significance[i]) {
+//                                    matrix[5] = matrix[5] + 1;
+//                                } else if (conformalPrediction.get(k).getpPositive() == conformalPrediction.get(k).getpNegative()) {
+//                                    matrix[4] = matrix[4] + 1;
+//                                }
+
+//                                if(conformalPrediction.get(k).getpPositive() >= significance[i]){
+//                                if(conformalPrediction.get(k).getpPositive() <= significance[i]){
+//                                    matrix[j] = matrix[j] + 1;
+//                                }
+//                            }
+                            break;
+
+                        case 3:
+                            if (conformalPrediction.get(k).getRealClass() == -1 && conformalPrediction.get(k).getPredictClass() == -1) {
+                                if (conformalPrediction.get(k).getpPositive() >= significance[i]
+                                        && conformalPrediction.get(k).getpNegative() >= significance[i]){
+                                    matrix[5] = matrix[5]+1;
+                                }
+                                if((conformalPrediction.get(k).getpPositive() < significance[i]
+                                        && conformalPrediction.get(k).getpNegative() < significance[i])){
+                                    matrix[4] = matrix[4]+1;
+                                }
+                                if((conformalPrediction.get(k).getpPositive() >= significance[i]
+                                        && conformalPrediction.get(k).getpNegative() < significance[i])
+                                        || (conformalPrediction.get(k).getpPositive() < significance[i]
+                                        && conformalPrediction.get(k).getpNegative() >= significance[i])){
+                                    matrix[j] = matrix[j]+1;
+                                }
+
+                            }
+//                            if (conformalPrediction.get(k).getRealClass() == -1 && conformalPrediction.get(k).getPredictClass() == -1) {
+////                                if (conformalPrediction.get(k).getpNegative() >= significance[i]) {
+//                                if (conformalPrediction.get(k).getpNegative() <= significance[i]) {
+//                                    matrix[j] = matrix[j] + 1;
+////                                } else if (conformalPrediction.get(k).getpNegative() < significance[i]) {
+//                                } else if (conformalPrediction.get(k).getpNegative() > significance[i]) {
+//                                    matrix[5] = matrix[5] + 1;
+//                                } else if (conformalPrediction.get(k).getpPositive() == conformalPrediction.get(k).getpNegative()) {
+//                                    matrix[4] = matrix[4] + 1;
+//                                }
+//
+////                                if(conformalPrediction.get(k).getpPositive() >= significance[i]){
+////                                if(conformalPrediction.get(k).getpPositive() <= significance[i]){
+////                                    matrix[j] = matrix[j] + 1;
+////                                }
+//                            }
+                            break;
+                    }
+                }
+            }
+            settingsExcel.createCellRowMatrixRegionPrediction(sheet, matrix, significance[i], indentRow + i);
+        }
+
+//        File file = new File("C:/SVM4_TEST_RegionPrediction/" + "test" + "/" + "test" + ".xlsx");
+//        file.getParentFile().mkdirs();
+//        FileOutputStream outFile = new FileOutputStream(file);
+        workbook.write(outFile);
+        System.out.println("Created file: " + file.getAbsolutePath());
+        outFile.close();
+    }
+
+
+
+    public void printTableAndMatrix(ArrayList<Prediction> conformalPrediction, String outputFileName) throws IOException {
+        SettingsExcel settingsExcel = new SettingsExcel();
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet(outputFileName);
+        XSSFCellStyle styleStandart = settingsExcel.createStyleForCellStandart(workbook);
+
+        ArrayList<String> stringsName;
+        stringsName = Parser.getTitle("titleName80To99");
+
+        settingsExcel.createCellForTitle(sheet, stringsName);
+
+//        settingsExcel.createCellDouble(sheet, conformalPrediction);
+        settingsExcel.createCellTable80To99(sheet, conformalPrediction);
+
+        ////////////////////
+
+        Row row;
+        Cell cell;
+
+        int indentRow = conformalPrediction.size()+2;
+
+        row = sheet.createRow(indentRow);
+        cell = row.createCell(0, CellType.STRING);
+        cell.setCellValue("");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(1, CellType.STRING);
+        cell.setCellValue("Real: 1\nPredict: 1");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(2, CellType.STRING);
+        cell.setCellValue("Real: -1\nPredict: 1");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(3, CellType.STRING);
+        cell.setCellValue("Real: 1\nPredict: -1");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(4, CellType.STRING);
+        cell.setCellValue("Real: -1\nPredict: -1");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(5, CellType.STRING);
+        cell.setCellValue("Empty");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(6, CellType.STRING);
+        cell.setCellValue("Uncertain predictions");
+        cell.setCellStyle(styleStandart);
+
+        double[] significance = {0.01, 0.05, 0.1, 0.15, 0.2};
+
+        int column = 6;
+        int[] matrix = new int[column];
+
+        for (int i = 0; i < significance.length; i++) {
+            for (int j = 0; j < column; j++) {
+                matrix[j] = 0;
+            }
+            for (int k = 0; k < conformalPrediction.size(); k++) {
+                for (int j = 0; j < column; j++) {
+                    switch (j) {
+                        case 0:
+                            if (conformalPrediction.get(k).getRealClass() == 1 && conformalPrediction.get(k).getPredictClass() == 1) {
+                                if (conformalPrediction.get(k).getpPositive() >= significance[i]
+                                        && conformalPrediction.get(k).getpNegative() >= significance[i]){
+                                    matrix[5] = matrix[5]+1;
+                                }
+                                if((conformalPrediction.get(k).getpPositive() < significance[i]
+                                        && conformalPrediction.get(k).getpNegative() < significance[i])){
+                                    matrix[4] = matrix[4]+1;
+                                }
+                                if((conformalPrediction.get(k).getpPositive() >= significance[i]
+                                        && conformalPrediction.get(k).getpNegative() < significance[i])
+                                        || (conformalPrediction.get(k).getpPositive() < significance[i]
+                                        && conformalPrediction.get(k).getpNegative() >= significance[i])){
+                                    matrix[j] = matrix[j]+1;
+                                }
+
+                            }
+                            break;
+
+                        case 1:
+                            if (conformalPrediction.get(k).getRealClass() == -1 && conformalPrediction.get(k).getPredictClass() == 1) {
+                                if (conformalPrediction.get(k).getpPositive() >= significance[i]
+                                        && conformalPrediction.get(k).getpNegative() >= significance[i]){
+                                    matrix[5] = matrix[5]+1;
+                                }
+                                if((conformalPrediction.get(k).getpPositive() < significance[i]
+                                        && conformalPrediction.get(k).getpNegative() < significance[i])){
+                                    matrix[4] = matrix[4]+1;
+                                }
+                                if((conformalPrediction.get(k).getpPositive() >= significance[i]
+                                        && conformalPrediction.get(k).getpNegative() < significance[i])
+                                        || (conformalPrediction.get(k).getpPositive() < significance[i]
+                                        && conformalPrediction.get(k).getpNegative() >= significance[i])){
+                                    matrix[j] = matrix[j]+1;
+                                }
+
+                            }
+
+                            break;
+
+                        case 2:
+                            if (conformalPrediction.get(k).getRealClass() == 1 && conformalPrediction.get(k).getPredictClass() == -1) {
+                                if (conformalPrediction.get(k).getpPositive() >= significance[i]
+                                        && conformalPrediction.get(k).getpNegative() >= significance[i]){
+                                    matrix[5] = matrix[5]+1;
+                                }
+                                if((conformalPrediction.get(k).getpPositive() < significance[i]
+                                        && conformalPrediction.get(k).getpNegative() < significance[i])){
+                                    matrix[4] = matrix[4]+1;
+                                }
+                                if((conformalPrediction.get(k).getpPositive() >= significance[i]
+                                        && conformalPrediction.get(k).getpNegative() < significance[i])
+                                        || (conformalPrediction.get(k).getpPositive() < significance[i]
+                                        && conformalPrediction.get(k).getpNegative() >= significance[i])){
+                                    matrix[j] = matrix[j]+1;
+                                }
+                            }
+                            break;
+
+                        case 3:
+                            if (conformalPrediction.get(k).getRealClass() == -1 && conformalPrediction.get(k).getPredictClass() == -1) {
+                                if (conformalPrediction.get(k).getpPositive() >= significance[i]
+                                        && conformalPrediction.get(k).getpNegative() >= significance[i]){
+                                    matrix[5] = matrix[5]+1;
+                                }
+                                if((conformalPrediction.get(k).getpPositive() < significance[i]
+                                        && conformalPrediction.get(k).getpNegative() < significance[i])){
+                                    matrix[4] = matrix[4]+1;
+                                }
+                                if((conformalPrediction.get(k).getpPositive() >= significance[i]
+                                        && conformalPrediction.get(k).getpNegative() < significance[i])
+                                        || (conformalPrediction.get(k).getpPositive() < significance[i]
+                                        && conformalPrediction.get(k).getpNegative() >= significance[i])){
+                                    matrix[j] = matrix[j]+1;
+                                }
+
+                            }
+                            break;
+                    }
+                }
+            }
+            settingsExcel.createCellRowMatrixRegionPrediction(sheet, matrix, significance[i], indentRow + i);
+        }
+
+////////////////////
+        File file = new File("C:/SVM_13/" + outputFileName + ".xlsx");
+        file.getParentFile().mkdirs();
+        FileOutputStream outFile = new FileOutputStream(file);
+        workbook.write(outFile);
+        System.out.println("Created file: " + file.getAbsolutePath());
+        outFile.close();
+    }
+
 }
+

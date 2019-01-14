@@ -1,0 +1,1 @@
+ID,p1,p-1,True class,Prediction,Prediction SVM,Confidence SMV(%),Confidence(%),Credibility(%),Alpha Positive,Alpha Negative,Count Positive,Count Negative,Object

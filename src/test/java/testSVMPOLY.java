@@ -1,4 +1,4 @@
-package java;
+//package java;
 
 import com.SymptomsResult;
 import com.models.Prediction;
@@ -15,10 +15,12 @@ import java.util.ArrayList;
  */
 public class testSVMPOLY {
     SymptomsService symptomsService;
+    private String dirName;
 
     @Before
     public void init() throws SQLException, IOException, ClassNotFoundException {
         symptomsService = new SymptomsService();
+        dirName = "SVM_matrix_";
     }
 
     @Test
@@ -27,7 +29,7 @@ public class testSVMPOLY {
         ArrayList<Prediction> conformalPrediction = symptomsService.getConformalPrediction("testNew.txt", degree);
         SymptomsResult symptomsResult = new SymptomsResult();
         String svmType = "POLY_";
-        symptomsResult.printFullResultInOneExcel(conformalPrediction, "SVM_TEST_eps_01_" + svmType + degree, "svm sheet");
+        symptomsResult.printFullResultInOneExcel(conformalPrediction, dirName + svmType + degree, "svm sheet");
     }
 
     @Test
@@ -36,7 +38,7 @@ public class testSVMPOLY {
         ArrayList<Prediction> conformalPrediction = symptomsService.getConformalPrediction("testNew.txt", degree);
         SymptomsResult symptomsResult = new SymptomsResult();
         String svmType = "POLY_";
-        symptomsResult.printFullResultInOneExcel(conformalPrediction, "SVM_" + svmType + degree, "svm sheet");
+        symptomsResult.printFullResultInOneExcel(conformalPrediction, dirName + svmType + degree, "svm sheet");
     }
 
     @Test
@@ -45,7 +47,7 @@ public class testSVMPOLY {
         ArrayList<Prediction> conformalPrediction = symptomsService.getConformalPrediction("testNew.txt", degree);
         SymptomsResult symptomsResult = new SymptomsResult();
         String svmType = "POLY_";
-        symptomsResult.printFullResultInOneExcel(conformalPrediction, "SVM_" + svmType + degree, "svm sheet");
+        symptomsResult.printFullResultInOneExcel(conformalPrediction, dirName + svmType + degree, "svm sheet");
     }
 
     @Test
@@ -54,7 +56,7 @@ public class testSVMPOLY {
         ArrayList<Prediction> conformalPrediction = symptomsService.getConformalPrediction("testNew.txt", degree);
         SymptomsResult symptomsResult = new SymptomsResult();
         String svmType = "POLY_";
-        symptomsResult.printFullResultInOneExcel(conformalPrediction, "SVM_" + svmType + degree, "svm sheet");
+        symptomsResult.printFullResultInOneExcel(conformalPrediction, dirName + svmType + degree, "svm sheet");
     }
 
     @Test
@@ -63,7 +65,7 @@ public class testSVMPOLY {
         ArrayList<Prediction> conformalPrediction = symptomsService.getConformalPrediction("testNew.txt", degree);
         SymptomsResult symptomsResult = new SymptomsResult();
         String svmType = "POLY_";
-        symptomsResult.printFullResultInOneExcel(conformalPrediction, "SVM_" + svmType + degree, "svm sheet");
+        symptomsResult.printFullResultInOneExcel(conformalPrediction, dirName + svmType + degree, "svm sheet");
     }
 
     @Test
@@ -72,7 +74,7 @@ public class testSVMPOLY {
         ArrayList<Prediction> conformalPrediction = symptomsService.getConformalPrediction("testNew.txt", degree);
         SymptomsResult symptomsResult = new SymptomsResult();
         String svmType = "POLY_";
-        symptomsResult.printFullResultInOneExcel(conformalPrediction, "SVM_" + svmType + degree, "svm sheet");
+        symptomsResult.printFullResultInOneExcel(conformalPrediction, dirName + svmType + degree, "svm sheet");
     }
 
     @Test
@@ -81,7 +83,25 @@ public class testSVMPOLY {
         ArrayList<Prediction> conformalPrediction = symptomsService.getConformalPrediction("testNew.txt", degree);
         SymptomsResult symptomsResult = new SymptomsResult();
         String svmType = "POLY_";
-        symptomsResult.printFullResultInOneExcel(conformalPrediction, "SVM_" + svmType + degree, "svm sheet");
+        symptomsResult.printFullResultInOneExcel(conformalPrediction, dirName + svmType + degree, "svm sheet");
+    }
+
+//    @Test
+//    public void SVMRBF19() throws IOException, SQLException {
+//        int degree = 1;
+//        ArrayList<Prediction> conformalPrediction = symptomsService.getConformalPrediction("testNew.txt", degree);
+//        SymptomsResult symptomsResult = new SymptomsResult();
+//        String svmType = "RBF_";
+//        symptomsResult.printFullResultInOneExcel(conformalPrediction, "SVM_TEST_" + svmType + degree, "svm sheet");
+//    }
+
+
+    @Test
+    public void SVMPOLY7EPS() throws IOException, SQLException {
+        int degree = 7;
+        String svmType = "POLY";
+        SymptomsResult symptomsResult = new SymptomsResult();
+        symptomsResult.printToExcelMatrixRPDifEpsTestMethod(symptomsService, "testNew.txt", dirName+svmType+"_"+degree, degree, svmType);
     }
 
 }

@@ -69,25 +69,25 @@ public class SettingsExcel {
         return style;
     }
 
-    public void createCellForTitle(XSSFSheet sheet, ArrayList<String> stringsName){
+    public void createCellForTitle(XSSFSheet sheet, ArrayList<String> stringsName) {
         XSSFWorkbook workbook = sheet.getWorkbook();
         XSSFCellStyle style = createStyleForTitle(workbook);
         Cell cell;
         Row row = sheet.createRow(0);
-        for(int i = 0; i<stringsName.size(); i++){
+        for (int i = 0; i < stringsName.size(); i++) {
             cell = row.createCell(i, CellType.STRING);
             cell.setCellValue(stringsName.get(i));
             cell.setCellStyle(style);
         }
     }
 
-    public void createCellStandart(XSSFSheet sheet, ArrayList<Prediction> conformalPrediction){
+    public void createCellStandart(XSSFSheet sheet, ArrayList<Prediction> conformalPrediction) {
         XSSFWorkbook workbook = sheet.getWorkbook();
         XSSFCellStyle style = createStyleForCellStandart(workbook);
         Cell cell;
         Row row;
-        for(int i = 0; i<conformalPrediction.size(); i++){
-            row = sheet.createRow(i+1);
+        for (int i = 0; i < conformalPrediction.size(); i++) {
+            row = sheet.createRow(i + 1);
             cell = row.createCell(0, CellType.NUMERIC);
             cell.setCellValue(conformalPrediction.get(i).getId());
             cell.setCellStyle(style);
@@ -172,7 +172,7 @@ public class SettingsExcel {
         }
     }
 
-    public void createCellDouble(XSSFSheet sheet, ArrayList<Prediction> conformalPrediction){
+    public void createCellDouble(XSSFSheet sheet, ArrayList<Prediction> conformalPrediction) {
         XSSFWorkbook workbook = sheet.getWorkbook();
         XSSFCellStyle styleStandart = createStyleForCellStandart(workbook);
         XSSFCellStyle styleDouble = createStyleForCellDouble(workbook);
@@ -183,19 +183,20 @@ public class SettingsExcel {
         styleAlphas.setBorderRight(BorderStyle.THIN);
         styleAlphas.setBorderTop(BorderStyle.THIN);
         styleAlphas.setWrapText(true);
-        sheet.setColumnWidth(0, 10*256);
-        sheet.setColumnWidth(13, 35*256);
-        sheet.setColumnWidth(14, 200*256);
-        sheet.setColumnWidth(15, 200*256);
+//        sheet.setColumnWidth(0, 10 * 256);
+//        sheet.setColumnWidth(13, 35 * 256);
+//        sheet.setColumnWidth(14, 200 * 256);
+//        sheet.setColumnWidth(15, 200 * 256);
 
-        int range100TO95 = 0;
-        int range95TO90 = 0;
-        int range90TO80 = 0;
+//        int range80TO90 = 0;
+//        int range90TO95 = 0;
+//        int range95TO100 = 0;
+
 
         Cell cell;
         Row row;
-        for(int i = 0; i<conformalPrediction.size(); i++){
-            row = sheet.createRow(i+1);
+        for (int i = 0; i < conformalPrediction.size(); i++) {
+            row = sheet.createRow(i + 1);
             cell = row.createCell(0, CellType.NUMERIC);
             cell.setCellValue(conformalPrediction.get(i).getId());
             cell.setCellStyle(styleStandart);
@@ -229,7 +230,7 @@ public class SettingsExcel {
             cell.setCellStyle(styleDouble);
 
             cell = row.createCell(7, CellType.NUMERIC);
-            cell.setCellValue(conformalPrediction.get(i).getConfidence()*100);
+            cell.setCellValue(conformalPrediction.get(i).getConfidence() * 100);
             cell.setCellStyle(styleDouble);
 
             cell = row.createCell(8, CellType.NUMERIC);
@@ -277,66 +278,242 @@ public class SettingsExcel {
 //            cell.setCellValue(String.valueOf(conformalPrediction.get(i).getNegativeSupportVectorsAlphas()));
 //            cell.setCellStyle(styleAlphas);
 
-            if(conformalPrediction.get(i).getConfidence()>=0.95){
-                range100TO95++;
-            } else if(conformalPrediction.get(i).getConfidence()>=0.90
-                    && conformalPrediction.get(i).getConfidence()<0.95){
-                range95TO90++;
-            } else if(conformalPrediction.get(i).getConfidence()>=0.80
-                    && conformalPrediction.get(i).getConfidence()<0.90){
-                range90TO80++;
+//            if(conformalPrediction.get(i).getConfidence()>=0.95){
+//                range95TO100++;
+//            } else if(conformalPrediction.get(i).getConfidence()>=0.90
+//                    && conformalPrediction.get(i).getConfidence()<0.95){
+//                range90TO95++;
+//            } else if(conformalPrediction.get(i).getConfidence()>=0.80
+//                    && conformalPrediction.get(i).getConfidence()<0.90){
+//                range80TO90++;
+//            }
+        }
+
+//        row = sheet.createRow(conformalPrediction.size()+2);
+//        cell = row.createCell(0, CellType.STRING);
+//        cell.setCellValue("Confidence range:");
+//        cell.setCellStyle(styleAlphas);
+//
+//        cell = row.createCell(1, CellType.STRING);
+//        cell.setCellValue("Count");
+//        cell.setCellStyle(styleStandart);
+//
+//        row = sheet.createRow(conformalPrediction.size()+3);
+//        cell = row.createCell(0, CellType.STRING);
+//        cell.setCellValue("95-100");
+//        cell.setCellStyle(styleStandart);
+//
+//        cell = row.createCell(1, CellType.NUMERIC);
+//        cell.setCellValue(range95TO100);
+//        cell.setCellStyle(styleStandart);
+//
+//        row = sheet.createRow(conformalPrediction.size()+4);
+//        cell = row.createCell(0, CellType.STRING);
+//        cell.setCellValue("90-95");
+//        cell.setCellStyle(styleStandart);
+//
+//        cell = row.createCell(1, CellType.NUMERIC);
+//        cell.setCellValue(range90TO95);
+//        cell.setCellStyle(styleStandart);
+//
+//        row = sheet.createRow(conformalPrediction.size()+5);
+//        cell = row.createCell(0, CellType.STRING);
+//        cell.setCellValue("80-90");
+//        cell.setCellStyle(styleStandart);
+//
+//        cell = row.createCell(1, CellType.NUMERIC);
+//        cell.setCellValue(range80TO90);
+//        cell.setCellStyle(styleStandart);
+
+        //createCellRange80To100(sheet, conformalPrediction);
+
+
+    }
+
+    public void createCellRange80To100(XSSFSheet sheet, ArrayList<Prediction> conformalPrediction) {
+        XSSFWorkbook workbook = sheet.getWorkbook();
+        XSSFCellStyle styleStandart = createStyleForCellStandart(workbook);
+
+        Cell cell;
+        Row row;
+
+        int range80TO90 = 0;
+        int range90TO95 = 0;
+        int range95TO100 = 0;
+
+        for (int i = 0; i < conformalPrediction.size(); i++) {
+            if (conformalPrediction.get(i).getConfidence() >= 0.95) {
+                range95TO100++;
+            } else if (conformalPrediction.get(i).getConfidence() >= 0.90
+                    && conformalPrediction.get(i).getConfidence() < 0.95) {
+                range90TO95++;
+            } else if (conformalPrediction.get(i).getConfidence() >= 0.80
+                    && conformalPrediction.get(i).getConfidence() < 0.90) {
+                range80TO90++;
             }
         }
-        row = sheet.createRow(conformalPrediction.size()+2);
+
+        row = sheet.createRow(conformalPrediction.size() + 2);
         cell = row.createCell(0, CellType.STRING);
         cell.setCellValue("Confidence range:");
-        cell.setCellStyle(styleAlphas);
+        cell.setCellStyle(styleStandart);
 
         cell = row.createCell(1, CellType.STRING);
         cell.setCellValue("Count");
         cell.setCellStyle(styleStandart);
 
-        row = sheet.createRow(conformalPrediction.size()+3);
+        row = sheet.createRow(conformalPrediction.size() + 3);
         cell = row.createCell(0, CellType.STRING);
         cell.setCellValue("95-100");
         cell.setCellStyle(styleStandart);
 
         cell = row.createCell(1, CellType.NUMERIC);
-        cell.setCellValue(range100TO95);
+        cell.setCellValue(range95TO100);
         cell.setCellStyle(styleStandart);
 
-        row = sheet.createRow(conformalPrediction.size()+4);
+        row = sheet.createRow(conformalPrediction.size() + 4);
         cell = row.createCell(0, CellType.STRING);
         cell.setCellValue("90-95");
         cell.setCellStyle(styleStandart);
 
         cell = row.createCell(1, CellType.NUMERIC);
-        cell.setCellValue(range95TO90);
+        cell.setCellValue(range90TO95);
         cell.setCellStyle(styleStandart);
 
-        row = sheet.createRow(conformalPrediction.size()+5);
+        row = sheet.createRow(conformalPrediction.size() + 5);
         cell = row.createCell(0, CellType.STRING);
         cell.setCellValue("80-90");
         cell.setCellStyle(styleStandart);
 
         cell = row.createCell(1, CellType.NUMERIC);
-        cell.setCellValue(range90TO80);
+        cell.setCellValue(range80TO90);
         cell.setCellStyle(styleStandart);
+    }
+
+    public void createCellMatrixRegionPrediction(XSSFSheet sheet, int[][] matrix, int indentRow) {
+        XSSFWorkbook workbook = sheet.getWorkbook();
+        XSSFCellStyle styleStandart = createStyleForCellStandart(workbook);
+//        sheet.setColumnWidth(0, 10 * 256);
+//        sheet.setColumnWidth(13, 35 * 256);
+//        sheet.setColumnWidth(14, 200 * 256);
+//        sheet.setColumnWidth(15, 200 * 256);
+
+        Cell cell;
+        Row row;
+
+        int matrixRow = matrix[0].length;
+        int matrixColumn = matrix[1].length;
+
+        row = sheet.createRow(indentRow);
+        cell = row.createCell(0, CellType.STRING);
+        cell.setCellValue("");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(1, CellType.STRING);
+        cell.setCellValue("Real: 1\nPredict: 1");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(2, CellType.STRING);
+        cell.setCellValue("Real: -1\nPredict: 1");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(3, CellType.STRING);
+        cell.setCellValue("Real: 1\nPredict: -1");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(4, CellType.STRING);
+        cell.setCellValue("Real: -1\nPredict: -1");
+        cell.setCellStyle(styleStandart);
+
+        cell = row.createCell(5, CellType.STRING);
+        cell.setCellValue("Empty");
+        cell.setCellStyle(styleStandart);
+
+        indentRow++;
+        double significance = 0.01;
+        for (int i = 0; i < matrixRow; i++) {
+            row = sheet.createRow(indentRow + i);
+            cell = row.createCell(0, CellType.NUMERIC);
+            cell.setCellValue(significance);
+            cell.setCellStyle(styleStandart);
+            for (int j = 1; j <= matrixColumn; j++) {
+                cell = row.createCell(j, CellType.NUMERIC);
+                cell.setCellValue(matrix[i][j - 1]);
+                cell.setCellStyle(styleStandart);
+            }
+            if (significance == 0.01) {
+                significance = significance + 0.04;
+            } else {
+                significance = significance + 0.05;
+            }
+        }
 
     }
 
-    public void createCellTestColor(XSSFSheet sheet, ArrayList<Prediction> conformalPrediction){
+    public void createCellRowMatrixRegionPrediction(XSSFSheet sheet, int[] matrix, double epsilon, int indentRow) {
+        XSSFWorkbook workbook = sheet.getWorkbook();
+        XSSFCellStyle styleStandart = createStyleForCellStandart(workbook);
+//        sheet.setColumnWidth(0, 10 * 256);
+//        sheet.setColumnWidth(13, 35 * 256);
+//        sheet.setColumnWidth(14, 200 * 256);
+//        sheet.setColumnWidth(15, 200 * 256);
+
+        Cell cell;
+        Row row;
+
+        int matrixColumn = matrix.length;
+
+//        row = sheet.createRow(indentRow);
+//        cell = row.createCell(0, CellType.STRING);
+//        cell.setCellValue("");
+//        cell.setCellStyle(styleStandart);
+//
+//        cell = row.createCell(1, CellType.STRING);
+//        cell.setCellValue("Real: 1\nPredict: 1");
+//        cell.setCellStyle(styleStandart);
+//
+//        cell = row.createCell(2, CellType.STRING);
+//        cell.setCellValue("Real: -1\nPredict: 1");
+//        cell.setCellStyle(styleStandart);
+//
+//        cell = row.createCell(3, CellType.STRING);
+//        cell.setCellValue("Real: 1\nPredict: -1");
+//        cell.setCellStyle(styleStandart);
+//
+//        cell = row.createCell(4, CellType.STRING);
+//        cell.setCellValue("Real: -1\nPredict: -1");
+//        cell.setCellStyle(styleStandart);
+//
+//        cell = row.createCell(5, CellType.STRING);
+//        cell.setCellValue("Empty");
+//        cell.setCellStyle(styleStandart);
+
+        indentRow++;
+
+        row = sheet.createRow(indentRow);
+        cell = row.createCell(0, CellType.NUMERIC);
+        cell.setCellValue(epsilon);
+        cell.setCellStyle(styleStandart);
+        for (int j = 1; j <= matrixColumn; j++) {
+            cell = row.createCell(j, CellType.NUMERIC);
+            cell.setCellValue(matrix[j - 1]);
+            cell.setCellStyle(styleStandart);
+        }
+
+    }
+
+
+    public void createCellTestColor(XSSFSheet sheet, ArrayList<Prediction> conformalPrediction) {
         XSSFWorkbook workbook = sheet.getWorkbook();
         XSSFCellStyle styleForCellStandart = createStyleForCellStandart(workbook);
         XSSFCellStyle styleForCellDouble = createStyleForCellDouble(workbook);
         XSSFCellStyle styleForCellPredict = createStyleForCellPredict(workbook);
 
-
         Cell cell;
         Row row;
 
-        for(int i = 0; i<conformalPrediction.size(); i++){
-            row = sheet.createRow(i+1);
+        for (int i = 0; i < conformalPrediction.size(); i++) {
+            row = sheet.createRow(i + 1);
             cell = row.createCell(0, CellType.NUMERIC);
             cell.setCellValue(conformalPrediction.get(i).getId());
             cell.setCellStyle(styleForCellStandart);
@@ -353,7 +530,7 @@ public class SettingsExcel {
             cell.setCellValue(conformalPrediction.get(i).getRealClass());
             cell.setCellStyle(styleForCellStandart);
 
-            if(conformalPrediction.get(i).getPredictClass()!=conformalPrediction.get(i).getRealClass()){
+            if (conformalPrediction.get(i).getPredictClass() != conformalPrediction.get(i).getRealClass()) {
                 cell = row.createCell(4, CellType.NUMERIC);
                 cell.setCellValue(conformalPrediction.get(i).getPredictClass());
                 cell.setCellStyle(styleForCellPredict);
@@ -363,7 +540,7 @@ public class SettingsExcel {
                 cell.setCellStyle(styleForCellStandart);
             }
 
-            if(conformalPrediction.get(i).getPredictClassSVM()!=conformalPrediction.get(i).getRealClass()) {
+            if (conformalPrediction.get(i).getPredictClassSVM() != conformalPrediction.get(i).getRealClass()) {
                 cell = row.createCell(5, CellType.NUMERIC);
                 cell.setCellValue(conformalPrediction.get(i).getPredictClassSVM());
                 cell.setCellStyle(styleForCellPredict);
@@ -372,8 +549,6 @@ public class SettingsExcel {
                 cell.setCellValue(conformalPrediction.get(i).getPredictClassSVM());
                 cell.setCellStyle(styleForCellStandart);
             }
-
-
 
             cell = row.createCell(6, CellType.NUMERIC);
             if (conformalPrediction.get(i).getPredictClassSVM() == 1) {
@@ -384,7 +559,7 @@ public class SettingsExcel {
             cell.setCellStyle(styleForCellDouble);
 
             cell = row.createCell(7, CellType.NUMERIC);
-            cell.setCellValue(conformalPrediction.get(i).getConfidence()*100);
+            cell.setCellValue(conformalPrediction.get(i).getConfidence() * 100);
             cell.setCellStyle(styleForCellDouble);
 
             cell = row.createCell(8, CellType.NUMERIC);
@@ -433,5 +608,142 @@ public class SettingsExcel {
         }
     }
 
+
+    public void createCellTable80To99(XSSFSheet sheet, ArrayList<Prediction> conformalPrediction) {
+        XSSFWorkbook workbook = sheet.getWorkbook();
+        XSSFCellStyle styleStandart = createStyleForCellStandart(workbook);
+        XSSFCellStyle styleDouble = createStyleForCellDouble(workbook);
+
+        XSSFCellStyle styleAlphas = workbook.createCellStyle();
+        styleAlphas.setBorderBottom(BorderStyle.THIN);
+        styleAlphas.setBorderLeft(BorderStyle.THIN);
+        styleAlphas.setBorderRight(BorderStyle.THIN);
+        styleAlphas.setBorderTop(BorderStyle.THIN);
+        styleAlphas.setWrapText(true);
+
+        int sig0dot2;
+        int sig0dot15;
+        int sig0dot1;
+        int sig0dot05;
+        int sig0dot01;
+
+
+        Cell cell;
+        Row row;
+        for (int i = 0; i < conformalPrediction.size(); i++) {
+            sig0dot2 = 0;
+            sig0dot15 = 0;
+            sig0dot1 = 0;
+            sig0dot05 = 0;
+            sig0dot01 = 0;
+
+            if(conformalPrediction.get(i).getpPositive()>=0.2){
+                sig0dot2 ++;
+            }
+            if (conformalPrediction.get(i).getpNegative()>=0.2){
+                sig0dot2 ++;
+            }
+
+            if(conformalPrediction.get(i).getpPositive()>=0.15){
+                sig0dot15 ++;
+            }
+            if (conformalPrediction.get(i).getpNegative()>=0.15){
+                sig0dot15 ++;
+            }
+
+            if(conformalPrediction.get(i).getpPositive()>=0.1){
+                sig0dot1 ++;
+            }
+            if (conformalPrediction.get(i).getpNegative()>=0.1){
+                sig0dot1 ++;
+            }
+
+            if(conformalPrediction.get(i).getpPositive()>=0.05){
+                sig0dot05 ++;
+            }
+            if (conformalPrediction.get(i).getpNegative()>=0.05){
+                sig0dot05 ++;
+            }
+
+            if(conformalPrediction.get(i).getpPositive()>=0.01){
+                sig0dot01 ++;
+            }
+            if (conformalPrediction.get(i).getpNegative()>=0.01){
+                sig0dot01 ++;
+            }
+
+            row = sheet.createRow(i + 1);
+            cell = row.createCell(0, CellType.NUMERIC);
+            cell.setCellValue(conformalPrediction.get(i).getId());
+            cell.setCellStyle(styleStandart);
+
+            cell = row.createCell(1, CellType.NUMERIC);
+            cell.setCellValue(conformalPrediction.get(i).getpPositive());
+            cell.setCellStyle(styleStandart);
+
+            cell = row.createCell(2, CellType.NUMERIC);
+            cell.setCellValue(conformalPrediction.get(i).getpNegative());
+            cell.setCellStyle(styleStandart);
+
+            cell = row.createCell(3, CellType.NUMERIC);
+            cell.setCellValue(conformalPrediction.get(i).getRealClass());
+            cell.setCellStyle(styleStandart);
+
+            cell = row.createCell(4, CellType.NUMERIC);
+            cell.setCellValue(conformalPrediction.get(i).getPredictClass());
+            cell.setCellStyle(styleStandart);
+
+            cell = row.createCell(5, CellType.NUMERIC);
+            cell.setCellValue(conformalPrediction.get(i).getPredictClassSVM());
+            cell.setCellStyle(styleStandart);
+
+            cell = row.createCell(6, CellType.NUMERIC);
+            if (conformalPrediction.get(i).getPredictClassSVM() == 1) {
+                cell.setCellValue(conformalPrediction.get(i).getConfidencePositiveClassSVM() * 100);
+            } else {
+                cell.setCellValue(conformalPrediction.get(i).getConfidenceNegativeClassSVM() * 100);
+            }
+            cell.setCellStyle(styleDouble);
+
+            cell = row.createCell(7, CellType.NUMERIC);
+            cell.setCellValue(conformalPrediction.get(i).getConfidence() * 100);
+            cell.setCellStyle(styleDouble);
+
+            cell = row.createCell(8, CellType.NUMERIC);
+            cell.setCellValue(conformalPrediction.get(i).getCredibility() * 100);
+            cell.setCellStyle(styleDouble);
+
+            cell = row.createCell(9, CellType.NUMERIC);
+            cell.setCellValue(conformalPrediction.get(i).getAlphaPositive());
+            cell.setCellStyle(styleStandart);
+
+            cell = row.createCell(10, CellType.NUMERIC);
+            cell.setCellValue(conformalPrediction.get(i).getAlphaNegative());
+            cell.setCellStyle(styleStandart);
+
+
+            cell = row.createCell(11, CellType.NUMERIC);
+            cell.setCellValue(sig0dot2);
+            cell.setCellStyle(styleStandart);
+//
+            cell = row.createCell(12, CellType.NUMERIC);
+            cell.setCellValue(sig0dot15);
+            cell.setCellStyle(styleStandart);
+
+            cell = row.createCell(13, CellType.NUMERIC);
+            cell.setCellValue(sig0dot1);
+            cell.setCellStyle(styleStandart);
+
+            cell = row.createCell(14, CellType.NUMERIC);
+            cell.setCellValue(sig0dot05);
+            cell.setCellStyle(styleStandart);
+
+            cell = row.createCell(15, CellType.NUMERIC);
+            cell.setCellValue(sig0dot01);
+            cell.setCellStyle(styleStandart);
+
+
+        }
+    }
 
 }

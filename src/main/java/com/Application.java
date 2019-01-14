@@ -14,7 +14,9 @@ public class Application {
 
         int k = 3;
         ArrayList<Prediction> conformalPrediction = symptomsService.getConformalPrediction("testNew.txt", k);
+
 //        //Prediction prediction = new Prediction();
+
         SymptomsResult symptomsResult = new SymptomsResult();
 
 //        svm_model svmModel = symptomsService.svmTrain();
@@ -23,7 +25,9 @@ public class Application {
 
         //int k = 2;
         //String svmType = "RBF_gamma_";
-        String svmType = "POLY_";
+
+        String svmType = "RBF_";
+
 //        symptomsResult.printFullResultInOneTxt(conformalPrediction, "resultsPOLYMain" + k);
 //        symptomsResult.printAlphasResultInTwoTxt(conformalPrediction, "resultsPOLYMain" + k,
 //                "alphaPositivePOLY" + k, "alphaNegativePOLY" + k);
@@ -34,7 +38,12 @@ public class Application {
 //            e.printStackTrace();
 //        }
 
-        symptomsResult.printFullResultInOneExcel(conformalPrediction, "SVM_" + svmType + k, "svm sheet");
+       // symptomsResult.printMatrixRegionPrediction(conformalPrediction);
+
+        symptomsResult.printFullResultInOneExcel(conformalPrediction, "SVM_tables_Matrix_" + svmType + k, "svm sheet");
+
+        symptomsResult.printMatrixRegionPrediction(conformalPrediction);
+
 
     }
 
