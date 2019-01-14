@@ -1286,7 +1286,7 @@ public class SymptomsResult {
         }
 
 ////////////////////
-        File file = new File("C:/SVM_13/" + outputFileName + ".xlsx");
+        File file = new File("C:/SVM_Matrix/" + outputFileName + ".xlsx");
         file.getParentFile().mkdirs();
         FileOutputStream outFile = new FileOutputStream(file);
         workbook.write(outFile);
