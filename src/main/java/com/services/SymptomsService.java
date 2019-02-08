@@ -695,6 +695,8 @@ public class SymptomsService {
         } else if(svmType.equals("RBF")){
             param.kernel_type = svm_parameter.RBF;
             param.gamma = 1.0/9.0;
+        } else if(svmType.equals("LINEAR")){
+            param.kernel_type = svm_parameter.LINEAR;
         } else {
             JOptionPane.showMessageDialog(null, "KERNEL TYPE ERROR!");
         }

@@ -22,6 +22,24 @@ public class testSVMTableAndMatrix {
     }
 
     @Test
+    public void SVMLINEAREPS() throws IOException, SQLException {
+        int degree = 1;
+        String svmType = "LINEAR";
+        SymptomsResult symptomsResult = new SymptomsResult();
+        ArrayList<Prediction> conformalPrediction = symptomsService.getConformalPrediction("testNew.txt", degree, 0.001, svmType);
+        symptomsResult.printTableAndMatrix(conformalPrediction, dirName + svmType + "_" + degree);
+    }
+
+    @Test
+    public void SVMPOLY1EPS() throws IOException, SQLException {
+        int degree = 1;
+        String svmType = "POLY";
+        SymptomsResult symptomsResult = new SymptomsResult();
+        ArrayList<Prediction> conformalPrediction = symptomsService.getConformalPrediction("testNew.txt", degree, 0.001, svmType);
+        symptomsResult.printTableAndMatrix(conformalPrediction, dirName + svmType + "_" + degree);
+    }
+
+    @Test
     public void SVMPOLY2EPS() throws IOException, SQLException {
         int degree = 2;
         String svmType = "POLY";
